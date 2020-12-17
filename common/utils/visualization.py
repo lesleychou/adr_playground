@@ -67,7 +67,7 @@ class Visualizer(object):
         self.log_distances = randomized_env_id.find('Lunar') == -1
         self.randomized_env = make_vec_envs(self.randomized_env_id, self.seed, self.neval_eps)
 
-    def generate_ground_truth(self, svpg_timesteps,simulator_agent, agent_policy, timesteps, log_path):
+    def generate_ground_truth(self, simulator_agent, agent_policy, timesteps, log_path):
         logger.debug('Generating ground truth...')
 
         self.evaluation_scores = [None] * simulator_agent.nparams
@@ -85,7 +85,7 @@ class Visualizer(object):
 
                 self.randomized_env.randomize(values)
                 
-                randomized_rewards, final_distances = evaluate_policy(svpg_timesteps=svpg_timesteps,
+                randomized_rewards, final_distances = evaluate_policy(svpg_timesteps=timesteps,
                                                 nagents=self.neval_eps, env=self.randomized_env,
                     agent_policy=agent_policy, replay_buffer=None, eval_episodes=1,
                     max_steps=self.max_steps, return_rewards=True, add_noise=False, log_distances=self.log_distances)

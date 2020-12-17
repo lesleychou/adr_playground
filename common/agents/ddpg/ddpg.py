@@ -6,6 +6,8 @@ import torch.nn.functional as F
 from common.models.actor_critic import Actor, Critic
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+ACTOR_LOSS_LOG = './results/actor_loss/'
+os.makedirs(ACTOR_LOSS_LOG ,exist_ok=True )
 
 
 class DDPG(object):
@@ -29,6 +31,8 @@ class DDPG(object):
         return self.actor(state).cpu().data.numpy()
 
     def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005):
+        log_path = os.path.join( ACTOR_LOSS_LOG ,'actor_loss_log_{}'.format(iterations) )
+        log_file = open( log_path ,'w' ,1 )
         for it in range(iterations):
             # Sample replay buffer 
             x, y, u, r, d = replay_buffer.sample(batch_size)
@@ -55,7 +59,11 @@ class DDPG(object):
 
             # Compute actor loss
             actor_loss = -self.critic(state, self.actor(state)).mean()
-            
+            #print(actor_loss, "-----------------actor-loss-------------")
+            # cumulative iteration += 1, param: agent-timestamps
+            actor_loss_log = actor_loss.tolist()
+            log_file.write( str(actor_loss_log) + '\n' )
+
             # Optimize the actor 
             self.actor_optimizer.zero_grad()
             actor_loss.backward()
@@ -67,6 +75,8 @@ class DDPG(object):
 
             for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                 target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+
+        log_file.close()
 
     def save(self, filename, directory):
         torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))

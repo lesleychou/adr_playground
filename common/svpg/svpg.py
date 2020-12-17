@@ -16,6 +16,10 @@ eps = np.finfo(np.float32).eps.item()
 LEARNING_RATE = 3e-4
 HIDDEN_DIMENSIONS = 100
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+SVPG_LOSS_LOG = './results/svpg_loss/'
+os.makedirs(SVPG_LOSS_LOG ,exist_ok=True )
+
 class SVPG:
     """Class that implements Stein Variational Policy Gradient
     Input is the current randomization settings, and output is either a 
@@ -168,11 +172,14 @@ class SVPG:
 
         return np.array(self.simulation_instances)
 
-    def train(self, simulator_rewards):
+    def train(self, simulator_rewards, svpg_timesteps):
         """Train SVPG agent with rewards from rollouts
         """
         policy_grads = []
         parameters = []
+
+        log_path = os.path.join( SVPG_LOSS_LOG ,'actor_loss_log_{}'.format(svpg_timesteps) )
+        log_file = open( log_path ,'w' ,1 )
 
         for i in range(self.nagents):
             policy_grad_particle = []
@@ -198,6 +205,12 @@ class SVPG:
             self.optimizers[i].zero_grad()
             critic_loss = 0.5 * advantages.pow(2).mean()
             critic_loss.backward(retain_graph=True)
+
+            # print(critic_loss, "-----------------svpg-loss-------------")
+            # cumulative iteration += 1, param: agent-timestamps
+            critic_loss_log = critic_loss.tolist()
+            log_file.write( str( critic_loss_log ) + '\n' )
+
             self.optimizers[i].step()
 
             # Store policy gradients for SVPG update

@@ -1,5 +1,5 @@
 import numpy as np
-
+import os
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -7,7 +7,8 @@ from torch.autograd import Variable
 from common.models.discriminator import MLPDiscriminator
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+DIS_LOSS_LOG = './results/discriminator_loss/'
+os.makedirs(DIS_LOSS_LOG ,exist_ok=True )
 
 class DiscriminatorRewarder(object):
     def __init__(self, reference_env, randomized_env_id, discriminator_batchsz, reward_scale,
@@ -52,6 +53,8 @@ class DiscriminatorRewarder(object):
     def train_discriminator(self, reference_trajectory, randomized_trajectory, iterations):
         """Trains discriminator to distinguish between reference and randomized state action tuples
         """
+        log_path = os.path.join( DIS_LOSS_LOG ,'actor_loss_log_{}'.format( iterations ) )
+        log_file = open( log_path ,'w' ,1 )
         for _ in range(iterations):
             randind = np.random.randint(0, len(randomized_trajectory[0]), size=int(self.batch_size))
             refind = np.random.randint(0, len(reference_trajectory[0]), size=int(self.batch_size))
@@ -67,8 +70,14 @@ class DiscriminatorRewarder(object):
             discrim_loss = self.discriminator_criterion(g_o, torch.ones((len(randomized_batch), 1), device=device)) + \
                            self.discriminator_criterion(e_o, torch.zeros((len(reference_batch), 1), device=device))
             discrim_loss.backward()
+            #print( discrim_loss ,"-----------------discrim_loss-------------" )
+            # cumulative iteration += 1, param: agent-timestamps
+            discrim_loss_log = discrim_loss.tolist()
+            log_file.write( str( discrim_loss_log ) + '\n' )
 
             self.discriminator_optimizer.step()
+
+        log_file.close()
 
     def _load_discriminator(self, name, path='saved-models/discriminator/discriminator_{}.pth'):
         self.discriminator.load_state_dict(torch.load(path.format(name), map_location=device))

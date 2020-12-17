@@ -85,7 +85,7 @@ class Visualizer(object):
 
                 self.randomized_env.randomize(values)
                 
-                randomized_rewards, final_distances = evaluate_policy(nagents=self.neval_eps, env=self.randomized_env, 
+                randomized_rewards, final_distances = evaluate_policy(nagents=self.neval_eps, env=self.randomized_env,
                     agent_policy=agent_policy, replay_buffer=None, eval_episodes=1,
                     max_steps=self.max_steps, return_rewards=True, add_noise=False, log_distances=self.log_distances)
 

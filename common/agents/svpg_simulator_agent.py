@@ -216,8 +216,9 @@ class SVPGSimulatorAgent(object):
         # Calculate discriminator based reward, pass it back to SVPG policy
         if self.svpg_timesteps >= self.initial_svpg_steps:
             if self.train_svpg:
-                self.svpg.train(rewards)
+                self.svpg.train(rewards, self.svpg_timesteps)
 
+            # plot sampled distribution
             for dimension in range(self.nparams):
                 self.sampled_regions[dimension] = np.concatenate([
                     self.sampled_regions[dimension], simulation_instances[:, :, dimension].flatten()

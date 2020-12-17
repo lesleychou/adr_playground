@@ -206,6 +206,7 @@ class SVPGSimulatorAgent(object):
                 # Train discriminator based on state action pairs for agent env. steps
                 # TODO: Train more?
                 self.discriminator_rewarder.train_discriminator(flattened_reference, flattened_randomized,
+                                                                svpg_timesteps=self.svpg_timesteps,
                                                                 iterations=agent_timesteps_current_iteration)
 
                 randomized_discrim_score_mean, randomized_discrim_score_median, randomized_discrim_score_sum = \
@@ -237,7 +238,8 @@ class SVPGSimulatorAgent(object):
             final_dist_rand = []
 
             for _ in range(self.randomized_eval_episodes):
-                rewards_ref, dist_ref = evaluate_policy(nagents=self.nagents,
+                rewards_ref, dist_ref = evaluate_policy(svpg_timesteps=self.svpg_timesteps,
+                                                        nagents=self.nagents,
                                                         env=self.reference_env,
                                                         agent_policy=agent_policy,
                                                         replay_buffer=None,
@@ -250,7 +252,8 @@ class SVPGSimulatorAgent(object):
                 full_random_settings = np.ones((self.nagents, self.nparams)) * -1
                 self.randomized_env.randomize(randomized_values=full_random_settings)
 
-                rewards_rand, dist_rand = evaluate_policy(nagents=self.nagents,
+                rewards_rand, dist_rand = evaluate_policy(svpg_timesteps=self.svpg_timesteps,
+                                                          nagents=self.nagents,
                                                           env=self.randomized_env,
                                                           agent_policy=agent_policy,
                                                           replay_buffer=None,
@@ -303,7 +306,8 @@ class SVPGSimulatorAgent(object):
 
             }
 
-            agent_hard_eval_rewards, final_dist_hard = evaluate_policy(nagents=self.nagents,
+            agent_hard_eval_rewards, final_dist_hard = evaluate_policy(svpg_timesteps=self.svpg_timesteps,
+                                                                       nagents=self.nagents,
                                                                        env=self.hard_env,
                                                                        agent_policy=agent_policy,
                                                                        replay_buffer=None,
@@ -332,7 +336,8 @@ class SVPGSimulatorAgent(object):
         if reference:
             if eval_episodes is None:
                 eval_episodes = self.episodes_per_instance
-            trajectory = evaluate_policy(nagents=self.nagents,
+            trajectory = evaluate_policy(svpg_timesteps=self.svpg_timesteps,
+                                         nagents=self.nagents,
                                          env=self.reference_env,
                                          agent_policy=agent_policy,
                                          replay_buffer=None,
@@ -342,7 +347,8 @@ class SVPGSimulatorAgent(object):
                                          add_noise=False,
                                          log_distances=self.log_distances)
         else:
-            trajectory = evaluate_policy(nagents=self.nagents,
+            trajectory = evaluate_policy(svpg_timesteps=self.svpg_timesteps,
+                                         nagents=self.nagents,
                                          env=self.randomized_env,
                                          agent_policy=agent_policy,
                                          replay_buffer=self.replay_buffer,

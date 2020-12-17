@@ -5,7 +5,7 @@ ERGO_SOLVED_DISTANCE = 0.025
 PUSHER_SOLVED_DISTANCE = 0.25  # Radius=0.17
 
 
-def evaluate_policy(nagents, env, agent_policy, replay_buffer, eval_episodes, max_steps, freeze_agent=True,
+def evaluate_policy(svpg_timesteps, nagents, env, agent_policy, replay_buffer, eval_episodes, max_steps, freeze_agent=True,
                     return_rewards=False, add_noise=False, log_distances=True, 
                     gail_rewarder=None, noise_scale=0.1, min_buffer_len=1000):
     """Evaluates a given policy in a particular environment, 
@@ -64,7 +64,7 @@ def evaluate_policy(nagents, env, agent_policy, replay_buffer, eval_episodes, ma
 
         # Train for total number of env iterations
         if not freeze_agent and len(replay_buffer.storage) > min_buffer_len:
-            agent_policy.train(replay_buffer=replay_buffer, iterations=training_iters)
+            agent_policy.train(replay_buffer=replay_buffer, iterations=training_iters, svpg_timesteps=svpg_timesteps)
 
         ep_rewards.append(agent_total_rewards)
 

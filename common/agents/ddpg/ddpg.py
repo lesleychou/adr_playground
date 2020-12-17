@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from common.models.actor_critic import Actor, Critic
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-ACTOR_LOSS_LOG = './results/actor_loss/'
+ACTOR_LOSS_LOG = './results/ddpg_loss/'
 os.makedirs(ACTOR_LOSS_LOG ,exist_ok=True )
 
 
@@ -30,8 +30,8 @@ class DDPG(object):
         state = torch.FloatTensor(state).to(device)
         return self.actor(state).cpu().data.numpy()
 
-    def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005):
-        log_path = os.path.join( ACTOR_LOSS_LOG ,'actor_loss_log_{}'.format(iterations) )
+    def train(self, replay_buffer, iterations, svpg_timesteps, batch_size=100, discount=0.99, tau=0.005):
+        log_path = os.path.join( ACTOR_LOSS_LOG ,'actor_loss_log_{}_{}'.format(svpg_timesteps, iterations ) )
         log_file = open( log_path ,'w' ,1 )
         for it in range(iterations):
             # Sample replay buffer 

@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     while simulator_agent.agent_timesteps < args.max_agent_timesteps:
         if svpg_timesteps % args.plot_frequency == 0:
-            generalization_metric = visualizer.generate_ground_truth(simulator_agent, agent_policy, svpg_timesteps, 
+            generalization_metric = visualizer.generate_ground_truth(svpg_timesteps, simulator_agent, agent_policy, svpg_timesteps,
                 log_path=paths['groundtruth_logs'])
 
             np.savez('{}/generalization-seed{}.npz'.format(paths['paper'], args.seed),
@@ -71,7 +71,7 @@ if __name__ == '__main__':
                 svpg_timesteps, log_path=paths['policy_logs'], plot_path=paths['policy_plots'])
             visualizer.plot_value(simulator_agent, agent_policy, 
                 svpg_timesteps, log_path=paths['policy_logs'], plot_path=paths['policy_plots'])
-            visualizer.plot_discriminator_reward(simulator_agent, agent_policy, 
+            visualizer.plot_discriminator_reward(simulator_agent, agent_policy,
                 svpg_timesteps, log_path=paths['policy_logs'], plot_path=paths['policy_plots'])
 
             if not args.freeze_svpg:

@@ -50,10 +50,10 @@ class DiscriminatorRewarder(object):
             score = (self.discriminator(traj_tensor).cpu().detach().numpy()+1e-8)
             return score.mean(), np.median(score), np.sum(score)
 
-    def train_discriminator(self, reference_trajectory, randomized_trajectory, iterations):
+    def train_discriminator(self, reference_trajectory, randomized_trajectory, svpg_timesteps, iterations):
         """Trains discriminator to distinguish between reference and randomized state action tuples
         """
-        log_path = os.path.join( DIS_LOSS_LOG ,'actor_loss_log_{}'.format( iterations ) )
+        log_path = os.path.join( DIS_LOSS_LOG ,'actor_loss_log_{}_{}'.format(svpg_timesteps, iterations ) )
         log_file = open( log_path ,'w' ,1 )
         for _ in range(iterations):
             randind = np.random.randint(0, len(randomized_trajectory[0]), size=int(self.batch_size))

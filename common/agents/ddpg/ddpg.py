@@ -15,12 +15,13 @@ class DDPG(object):
         self.actor = Actor(state_dim, action_dim, max_action).to(device)
         self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
-        self.actor_optimizer = torch.optim.Adam(self.actor.parameters())
+        # 5 times of default lr_rate=0.001
+        self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=0.005)
 
         self.critic = Critic(state_dim, action_dim).to(device)
         self.critic_target = Critic(state_dim, action_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
-        self.critic_optimizer = torch.optim.Adam(self.critic.parameters())
+        self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=0.005)
 
         self.max_action = max_action
 
@@ -29,8 +30,8 @@ class DDPG(object):
     def select_action(self, state):
         state = torch.FloatTensor(state).to(device)
         return self.actor(state).cpu().data.numpy()
-
-    def train(self, replay_buffer, iterations, svpg_timesteps, batch_size=100, discount=0.99, tau=0.005):
+    # 5 times of original batch_size=100
+    def train(self, replay_buffer, iterations, svpg_timesteps, batch_size=500, discount=0.99, tau=0.005):
         log_path = os.path.join( ACTOR_LOSS_LOG ,'actor_loss_log_{}_{}'.format(svpg_timesteps, iterations ) )
         log_file = open( log_path ,'w' ,1 )
         for it in range(iterations):

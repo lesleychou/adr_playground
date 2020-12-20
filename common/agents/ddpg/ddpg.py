@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 from common.models.actor_critic import Actor, Critic
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 ACTOR_LOSS_LOG = './results/ddpg_loss/'
 os.makedirs(ACTOR_LOSS_LOG ,exist_ok=True )
 

@@ -99,8 +99,8 @@ class Visualizer(object):
 
         self.evaluation_scores = np.array(self.evaluation_scores)
         
-        for randomized_dimension in range(simulator_agent.nparams):
-            name = self.randomized_env.get_dimension_name(randomized_dimension)
+        # for randomized_dimension in range(simulator_agent.nparams):
+        #     name = self.randomized_env.get_dimension_name(randomized_dimension)
 
         np.savez('{}.npz'.format(os.path.join(log_path, 'raw_rewards-{}'.format(timesteps))), 
             raw_rewards=self.evaluation_scores)
@@ -146,18 +146,18 @@ class Visualizer(object):
                 evaluation_array_mean.append(randomized_discrim_score_mean)
                 evaluation_array_median.append(randomized_discrim_score_median)
 
-            ground_truth_scaled = self.randomized_env.rescale(randomized_dimension, self.ground_truth_x)
-            name = self.randomized_env.get_dimension_name(randomized_dimension)
-            print('MeanDR', evaluation_array_mean[::10])
-            print('MedianDR', evaluation_array_median[::10])
+            # ground_truth_scaled = self.randomized_env.rescale(randomized_dimension, self.ground_truth_x)
+            # name = self.randomized_env.get_dimension_name(randomized_dimension)
+            # print('MeanDR', evaluation_array_mean[::10])
+            # print('MedianDR', evaluation_array_median[::10])
 
-            plt.plot(ground_truth_scaled, evaluation_array_mean, c="green")
-            plt.savefig('{}.png'.format(os.path.join(plot_path, 'mean-discrimrew-{}-{}'.format(name, timesteps))))
-            plt.close()
-
-            plt.plot(ground_truth_scaled, evaluation_array_median, c="green")
-            plt.savefig('{}.png'.format(os.path.join(plot_path, 'med-discrimrew-{}-{}'.format(name, timesteps))))
-            plt.close()
+            # plt.plot(ground_truth_scaled, evaluation_array_mean, c="green")
+            # plt.savefig('{}.png'.format(os.path.join(plot_path, 'mean-discrimrew-{}-{}'.format(name, timesteps))))
+            # plt.close()
+            #
+            # plt.plot(ground_truth_scaled, evaluation_array_median, c="green")
+            # plt.savefig('{}.png'.format(os.path.join(plot_path, 'med-discrimrew-{}-{}'.format(name, timesteps))))
+            # plt.close()
 
             np.savez('{}.npz'.format(os.path.join(log_path, 'discriminator_rewards-{}'.format(timesteps))), 
                 discriminator_mean=evaluation_array_mean,

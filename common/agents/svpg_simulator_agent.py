@@ -11,7 +11,7 @@ from common.svpg.svpg import SVPG
 from common.utils.rollout_evaluation import evaluate_policy, check_solved
 from common.agents.ddpg.replay_buffer import ReplayBuffer
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 logger = logging.getLogger(__name__)
 
 

@@ -69,10 +69,10 @@ if __name__ == '__main__':
 
             visualizer.plot_reward(simulator_agent, agent_policy, 
                 svpg_timesteps, log_path=paths['policy_logs'], plot_path=paths['policy_plots'])
-            visualizer.plot_value(simulator_agent, agent_policy, 
-                svpg_timesteps, log_path=paths['policy_logs'], plot_path=paths['policy_plots'])
-            visualizer.plot_discriminator_reward(simulator_agent, agent_policy,
-                svpg_timesteps, log_path=paths['policy_logs'], plot_path=paths['policy_plots'])
+            # visualizer.plot_value(simulator_agent, agent_policy,
+            #     svpg_timesteps, log_path=paths['policy_logs'], plot_path=paths['policy_plots'])
+            # visualizer.plot_discriminator_reward(simulator_agent, agent_policy,
+            #     svpg_timesteps, log_path=paths['policy_logs'], plot_path=paths['policy_plots'])
 
             if not args.freeze_svpg:
                 visualizer.plot_sampling_frequency(simulator_agent, agent_policy, 

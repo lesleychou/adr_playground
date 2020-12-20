@@ -6,7 +6,7 @@ from torch.autograd import Variable
 
 from common.models.discriminator import MLPDiscriminator
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 DIS_LOSS_LOG = './results/discriminator_loss/'
 os.makedirs(DIS_LOSS_LOG ,exist_ok=True )
 

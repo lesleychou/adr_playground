@@ -62,7 +62,7 @@ class RandomizedEnvWrapper(gym.Wrapper):
                 self.unwrapped.dimensions[dimension].current_value = \
                     self.unwrapped.dimensions[dimension].default_value
             elif randomized_value != 'random' and randomized_value != -1:
-                assert 0.0 <= randomized_value <= 1.0, "using incorrect: {}".format(randomized_value)
+                #assert 0.0 <= randomized_value <= 1.0, "using incorrect: {}".format(randomized_value)
                 self.unwrapped.dimensions[dimension].current_value = \
                     self.unwrapped.dimensions[dimension]._rescale(randomized_value)
             else:  # random

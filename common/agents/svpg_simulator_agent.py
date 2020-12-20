@@ -142,11 +142,26 @@ class SVPGSimulatorAgent(object):
             index = self.svpg_timesteps % self.svpg_horizon
             self.simulation_instances_full_horizon[:, index, :, :] = simulation_instances
 
+        #Creates completely randomized environment
         else:
-            # Creates completely randomized environment
             simulation_instances = np.ones((self.nagents,
                                             self.svpg.svpg_rollout_length,
                                             self.svpg.nparams)) * -1
+        # array1 = np.random.normal( 8.5 ,0.05 ,(5 ,1) )
+        # array2 = np.random.normal( 9.4 ,0.1 ,(5 ,1) )
+        # array3 = np.random.normal( 10.8 ,0.1 ,(5 ,1) )
+        # array4 = np.random.normal( 12.2 ,0.1 ,(5 ,1) )
+        # array5 = np.random.normal( 14 ,0.1 ,(5 ,1) )
+        # array6 = np.random.normal( 15.4 ,0.1 ,(5 ,1) )
+        # array7 = np.random.normal( 16.8 ,0.1 ,(5 ,1) )
+        # array8 = np.random.normal( 18.2 ,0.1 ,(5 ,1) )
+        # array9 = np.random.normal( 19.6 ,0.1 ,(5 ,1) )
+        # array10 = np.random.normal( 20 ,0.1 ,(5 ,1) )
+        # simulation_instances = np.array( [array1 ,array2 ,array3 ,array4 ,array5 ,array6 ,array7 ,array8 ,array9 ,array10] )
+        print(simulation_instances, "------simulation_instances------")
+        #simulation_instances=simulation_instances+0.2
+        print(simulation_instances, "------after simulation_instances------")
+
 
         assert (self.nagents, self.svpg.svpg_rollout_length, self.svpg.nparams) == simulation_instances.shape
 
@@ -175,6 +190,8 @@ class SVPGSimulatorAgent(object):
 
             self.randomized_env.randomize(randomized_values=simulation_instances[t])
             randomized_trajectory = self.rollout_agent(agent_policy, reference=False)
+            mse_para=self.randomized_env.get_current_params()
+            print(mse_para)
 
             for i in range(self.nagents):
                 agent_timesteps_current_iteration += len(randomized_trajectory[i])

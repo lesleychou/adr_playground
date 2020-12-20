@@ -1,4 +1,4 @@
-import gym
+import os
 import numpy as np
 import logging
 
@@ -13,6 +13,9 @@ from common.agents.ddpg.replay_buffer import ReplayBuffer
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logger = logging.getLogger(__name__)
+
+PARA_LOG = './results/simulator_instances/'
+os.makedirs(PARA_LOG ,exist_ok=True )
 
 
 class SVPGSimulatorAgent(object):
@@ -134,34 +137,37 @@ class SVPGSimulatorAgent(object):
         """Select an action based on SVPG policy, where an action is the delta in each dimension.
         Update the counts and statistics after training agent,
         rolling out policies, and calculating simulator reward.
-        """
-        if self.svpg_timesteps >= self.initial_svpg_steps:
-            # Get sim instances from SVPG policy
-            simulation_instances = self.svpg.step()
+        # """
+        # if self.svpg_timesteps >= self.initial_svpg_steps:
+        #     # Get sim instances from SVPG policy
+        #     simulation_instances = self.svpg.step()
+        #
+        #     index = self.svpg_timesteps % self.svpg_horizon
+        #     self.simulation_instances_full_horizon[:, index, :, :] = simulation_instances
+        #
+        # #Creates completely randomized environment
+        # else:
+        #     simulation_instances = np.ones((self.nagents,
+        #                                     self.svpg.svpg_rollout_length,
+        #                                     self.svpg.nparams)) * -1
+        log_path = os.path.join( PARA_LOG,'parameter_log_{}'.format(self.svpg_timesteps) )
+        log_file = open( log_path ,'w' ,1 )
 
-            index = self.svpg_timesteps % self.svpg_horizon
-            self.simulation_instances_full_horizon[:, index, :, :] = simulation_instances
+        array1 = np.random.uniform( 8 ,9.2 ,(5 ,1) )
+        array2 = np.random.uniform( 9.2 ,10.4 ,(5 ,1) )
+        array3 = np.random.uniform( 10.4 ,11.6 ,(5 ,1) )
+        array4 = np.random.uniform( 11.6 ,12.8 ,(5 ,1) )
+        array5 = np.random.uniform( 12.8 ,14 ,(5 ,1) )
+        array6 = np.random.uniform( 14 ,15.2 ,(5 ,1) )
+        array7 = np.random.uniform( 15.2 ,16.4 ,(5 ,1) )
+        array8 = np.random.uniform( 16.4 ,17.6 ,(5 ,1) )
+        array9 = np.random.uniform( 17.6 ,18.8 ,(5 ,1) )
+        array10 = np.random.uniform( 18.8 ,20 ,(5 ,1) )
+        simulation_instances = np.array( [array1 ,array2 ,array3 ,array4 ,array5 ,array6 ,array7 ,array8 ,array9 ,array10] )
 
-        #Creates completely randomized environment
-        else:
-            simulation_instances = np.ones((self.nagents,
-                                            self.svpg.svpg_rollout_length,
-                                            self.svpg.nparams)) * -1
-        # array1 = np.random.normal( 8.5 ,0.05 ,(5 ,1) )
-        # array2 = np.random.normal( 9.4 ,0.1 ,(5 ,1) )
-        # array3 = np.random.normal( 10.8 ,0.1 ,(5 ,1) )
-        # array4 = np.random.normal( 12.2 ,0.1 ,(5 ,1) )
-        # array5 = np.random.normal( 14 ,0.1 ,(5 ,1) )
-        # array6 = np.random.normal( 15.4 ,0.1 ,(5 ,1) )
-        # array7 = np.random.normal( 16.8 ,0.1 ,(5 ,1) )
-        # array8 = np.random.normal( 18.2 ,0.1 ,(5 ,1) )
-        # array9 = np.random.normal( 19.6 ,0.1 ,(5 ,1) )
-        # array10 = np.random.normal( 20 ,0.1 ,(5 ,1) )
-        # simulation_instances = np.array( [array1 ,array2 ,array3 ,array4 ,array5 ,array6 ,array7 ,array8 ,array9 ,array10] )
-        print(simulation_instances, "------simulation_instances------")
-        #simulation_instances=simulation_instances+0.2
-        print(simulation_instances, "------after simulation_instances------")
-
+        for i in range( 10 ):
+            for j in range( 5 ):
+                log_file.write( ' '.join(map(str, simulation_instances[i][j])) + '\n' )
 
         assert (self.nagents, self.svpg.svpg_rollout_length, self.svpg.nparams) == simulation_instances.shape
 
@@ -190,8 +196,6 @@ class SVPGSimulatorAgent(object):
 
             self.randomized_env.randomize(randomized_values=simulation_instances[t])
             randomized_trajectory = self.rollout_agent(agent_policy, reference=False)
-            mse_para=self.randomized_env.get_current_params()
-            print(mse_para)
 
             for i in range(self.nagents):
                 agent_timesteps_current_iteration += len(randomized_trajectory[i])
@@ -214,11 +218,6 @@ class SVPGSimulatorAgent(object):
 
                 flattened_reference = [reference_trajectories[i][t] for i in range(self.nagents)]
                 flattened_reference = np.concatenate(flattened_reference)
-
-                randomized_discrim_score_mean, randomized_discrim_score_median, randomized_discrim_score_sum = \
-                    self.discriminator_rewarder.get_score(flattened_randomized)
-                reference_discrim_score_mean, reference_discrim_score_median, reference_discrim_score_sum = \
-                    self.discriminator_rewarder.get_score(flattened_reference)
 
                 # Train discriminator based on state action pairs for agent env. steps
                 # TODO: Train more?
@@ -267,7 +266,9 @@ class SVPGSimulatorAgent(object):
                                                         log_distances=self.log_distances)
 
                 full_random_settings = np.ones((self.nagents, self.nparams)) * -1
-                self.randomized_env.randomize(randomized_values=full_random_settings)
+                # self.randomized_env.randomize(randomized_values=full_random_settings)
+                # mse_para = self.randomized_env.get_current_params()
+                # print( mse_para )
 
                 rewards_rand, dist_rand = evaluate_policy(svpg_timesteps=self.svpg_timesteps,
                                                           nagents=self.nagents,

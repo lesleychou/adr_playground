@@ -138,36 +138,24 @@ class SVPGSimulatorAgent(object):
         Update the counts and statistics after training agent,
         rolling out policies, and calculating simulator reward.
         # """
-        # if self.svpg_timesteps >= self.initial_svpg_steps:
-        #     # Get sim instances from SVPG policy
-        #     simulation_instances = self.svpg.step()
-        #
-        #     index = self.svpg_timesteps % self.svpg_horizon
-        #     self.simulation_instances_full_horizon[:, index, :, :] = simulation_instances
-        #
-        # #Creates completely randomized environment
-        # else:
-        #     simulation_instances = np.ones((self.nagents,
-        #                                     self.svpg.svpg_rollout_length,
-        #                                     self.svpg.nparams)) * -1
-        log_path = os.path.join( PARA_LOG,'parameter_log_{}'.format(self.svpg_timesteps) )
-        log_file = open( log_path ,'w' ,1 )
+        if self.svpg_timesteps >= self.initial_svpg_steps:
+            # Get sim instances from SVPG policy
+            simulation_instances = self.svpg.step()
 
-        array1 = np.random.uniform( 8 ,9.2 ,(5 ,1) )
-        array2 = np.random.uniform( 9.2 ,10.4 ,(5 ,1) )
-        array3 = np.random.uniform( 10.4 ,11.6 ,(5 ,1) )
-        array4 = np.random.uniform( 11.6 ,12.8 ,(5 ,1) )
-        array5 = np.random.uniform( 12.8 ,14 ,(5 ,1) )
-        array6 = np.random.uniform( 14 ,15.2 ,(5 ,1) )
-        array7 = np.random.uniform( 15.2 ,16.4 ,(5 ,1) )
-        array8 = np.random.uniform( 16.4 ,17.6 ,(5 ,1) )
-        array9 = np.random.uniform( 17.6 ,18.8 ,(5 ,1) )
-        array10 = np.random.uniform( 18.8 ,20 ,(5 ,1) )
-        simulation_instances = np.array( [array1 ,array2 ,array3 ,array4 ,array5 ,array6 ,array7 ,array8 ,array9 ,array10] )
+            index = self.svpg_timesteps % self.svpg_horizon
+            self.simulation_instances_full_horizon[:, index, :, :] = simulation_instances
 
-        for i in range( 10 ):
-            for j in range( 5 ):
-                log_file.write( ' '.join(map(str, simulation_instances[i][j])) + '\n' )
+        #Creates completely randomized environment
+        else:
+            simulation_instances = np.ones((self.nagents,
+                                            self.svpg.svpg_rollout_length,
+                                            self.svpg.nparams)) * -1
+            small_ranges = np.linspace(0,1,self.nagents+1)
+            for i in range(self.nagents):
+                miu = (small_ranges[i]+small_ranges[i+1])/2
+                sigma=(small_ranges[0+1]+small_ranges[0])/6
+                simulation_instances[i]=np.random.normal(miu, sigma,
+                                                         (self.svpg.svpg_rollout_length, self.nparams))
 
         assert (self.nagents, self.svpg.svpg_rollout_length, self.svpg.nparams) == simulation_instances.shape
 
@@ -186,15 +174,19 @@ class SVPGSimulatorAgent(object):
 
         # Reshape to work with vectorized environments
         simulation_instances = np.transpose(simulation_instances, (1, 0, 2))
-
+        log_path = os.path.join( PARA_LOG ,'parameter_log_{}'.format( self.svpg_timesteps ) )
+        log_file = open( log_path ,'w' ,1 )
         # Create environment instances with vectorized env, and rollout agent_policy in both
         for t in range(self.svpg.svpg_rollout_length):
             agent_timesteps_current_iteration = 0
-            logging.info('Iteration t: {}/{}'.format(t, self.svpg.svpg_rollout_length))  
+            logging.info('Iteration t: {}/{}'.format(t, self.svpg.svpg_rollout_length))
 
             reference_trajectory = self.rollout_agent(agent_policy)
 
             self.randomized_env.randomize(randomized_values=simulation_instances[t])
+            env_params = self.randomized_env.get_current_params()
+            log_file.write( ' '.join( [str(val) for val in env_params[:,0]] ) + '\n')
+            #print( env_params )
             randomized_trajectory = self.rollout_agent(agent_policy, reference=False)
 
             for i in range(self.nagents):
@@ -239,7 +231,8 @@ class SVPGSimulatorAgent(object):
             for dimension in range(self.nparams):
                 self.sampled_regions[dimension] = np.concatenate([
                     self.sampled_regions[dimension], simulation_instances[:, :, dimension].flatten()
-                ])           
+                ])
+                print(self.sampled_regions[dimension])
 
         solved_reference = info = None
         if self.agent_timesteps_since_eval > self.agent_eval_frequency:

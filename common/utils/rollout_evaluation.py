@@ -1,8 +1,13 @@
 import numpy as np
+import torch
+import torch.multiprocessing as mp
+
 
 LUNAR_LANDER_SOLVED_SCORE = 200.0
 ERGO_SOLVED_DISTANCE = 0.025
 PUSHER_SOLVED_DISTANCE = 0.25  # Radius=0.17
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 
 def evaluate_policy(svpg_timesteps, nagents, env, agent_policy, replay_buffer, eval_episodes, max_steps, freeze_agent=True,
@@ -64,7 +69,22 @@ def evaluate_policy(svpg_timesteps, nagents, env, agent_policy, replay_buffer, e
 
         # Train for total number of env iterations
         if not freeze_agent and len(replay_buffer.storage) > min_buffer_len:
-            agent_policy.train(replay_buffer=replay_buffer, iterations=training_iters, svpg_timesteps=svpg_timesteps)
+            #mp.set_start_method( 'spawn' )
+
+            # model = agent_policy().to(device)
+            # model.share_memory()  # gradients are allocated lazily, so they are not shared here
+
+            num_processes = 4
+            processes = []
+            for rank in range( num_processes ):
+                p = mp.Process( target=agent_policy.train(replay_buffer=replay_buffer,
+                                    iterations=training_iters, svpg_timesteps=svpg_timesteps))
+                # We first train the model across `num_processes` processes
+                p.start()
+                processes.append( p )
+            for p in processes:
+                p.join()
+            #agent_policy.train(replay_buffer=replay_buffer, iterations=training_iters, svpg_timesteps=svpg_timesteps)
 
         ep_rewards.append(agent_total_rewards)
 
